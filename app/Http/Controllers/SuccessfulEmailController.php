@@ -18,7 +18,7 @@ class SuccessfulEmailController extends Controller
         return response()->json($email, 201);
     }
 
-    public function show($id)
+    public function getById($id)
     {
         return SuccessfulEmail::findOrFail($id);
     }

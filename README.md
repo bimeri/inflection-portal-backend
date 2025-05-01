@@ -64,16 +64,16 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Installation locally
 1. Run the following command to install the project locally
-2. make sure your database is set already, for now I have pushed all my .env files with it configuration, but this file is a private file that does not need to be pushed.
+2. make sure your database is set already, for now I have pushed all my .env files with its configuration, but this file is a private file that does not need to be pushed.
 3. if you chose to modify the file, you can skip command d\
 ``bash``
 a.```git clone https://github.com/bimeri/inflection-portal-backend.git ```\
-b.```cd email-parser```\
+b.```cd inflection-portal-backend```\
 c.```composer install```\
 d. ```cp .env.example .env```\
 e. ```php artisan key:generate```\
 f. ```php artisan migrate```
-4. You have to run the command to update the database by adding the column for deleted_at\
+4. You have to run the command to update the database by adding the column ```deleted_at``` for sof delete\
 ***ALTER TABLE ``successful_emails`` ADD COLUMN ``deleted_at`` TIMESTAMP NULL DEFAULT NULL;***
 5. Run the command to create a default user for test purpose, note. The migrate command ran above will create the user table already, and there exists already a seeder class to add a default user\
 ```php artisan db:seed```
@@ -83,21 +83,23 @@ f. ```php artisan migrate```
 >>password=```password123```
 > 
 __note:__ the password will be encrypted in the database
+> on ubuntu, you can as well isntall nginx
 
 ### Features of the application
 
 - The app has five secured endpoints. these are secured with laravel sanctum security mechanisms
 - One free endpoint post ```/login``` which required a JSON body of:
->{\
+> __post__ http:localhost:8000/api/login\
+> body: {\
 "email":"admin@example.com",
 "password":"password123"\
 }
 - After authentication, a token will be generated:
 >{
-"token": "1|OnOnVk6o90Nvtefzc3NmqqD08yVhqKN5j5S33kip1a53b273"
+"token": "1|OnOnVk6o90Nvtefzc3modD08yVhqKN5j5S33kip1a53b273"
 }
 - this token will then be added in all the other requests in other to do any api call. Authorization type should be Bearer Token, the token needs to be appended with the Bearer alias\
-```Bearer access_token```
+```Bearer token_generated```
 ![img.png](img.png)
 
 - Endpoints to access include:
@@ -106,6 +108,7 @@ __note:__ the password will be encrypted in the database
 3. __put__ ```/api/emails/{id}``` this also requires a body of type ```SuccessfulEmail``` to update that particular email type
 4. __get__ ```/api/emails``` to get all emails. Normally, this technique is not recommended since it will fetch all records in the table and might slow down performance. The best way is to use pagination and load only some data at a time. But in the case of this demo, I will leave the endpoint like that, since it is just for tests, not production.
 5. __delete__ ```/api/emails/{id}``` to delete a record in the table based on the id given
+6. Soft Delete has been implemented, where records are not totally deleted but marked as deleted so that it can't feature anymore when fetching
 
 - The application has been scheduled to run a job triggered every hour. This job takes records in the database that has not yet been processed, processed it, and then saved the processed data.
 - __Note__: For the moment the job fetches for all records in the db that have not yet been processed. But for efficiently especially in production, the code will have to be modified to process this record in badges 
@@ -117,6 +120,15 @@ __note:__ the password will be encrypted in the database
 - By default, it will be available at the address: ```http://127.0.0.1:8000```
 - So to access any endpoint will be access via the ip address, example ```http://127.0.0.1:8000/api/emails```
 
-To manually trigger the command to parse the message, run the command below
+To manually trigger the command to parse the emails, run the command below
 -```php artisan schedule:work```
 
+## running the application on the server
+- All configuration has already been done, all dependencies have already been imported with composer
+- the application is located at the root directory ```/root/inflection-portal-backend/```
+- you can go to the directory and start the server ```cd /root/inflection-portal-backend/``` and type ```php artisan serve``` then you can do likewise as above to access the endpoints.
+- Here was the schedular register already in the cron ```0 * * * * cd /root/inflection-portal-backend && php artisan schedule:run >> /dev/null 2>&1``` you can modify it my typing ```crontab -e```
+- The schedule job is scheduled for one hour. you can check the job by typing the command ```sudo tail -f /var/log/syslog | grep CRON```
+
+# Bonus 😎
+for further enquiries, feel free to reach out to me via linkIn or GitHub or mail. bimerinoel@gmail.com
